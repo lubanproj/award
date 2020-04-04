@@ -107,10 +107,12 @@ func GetAward(username string) *AwardBatch {
 	fmt.Println("congratulations , you won ", awardBatch.GetName() )
 
 	awardTime := time.Unix(awardBatch.GetUpdateTime(), 0).Format("2006-01-02 15:04:05")
-//	userName := req.Form.Get("user_name")
-	if err := SaveRecords(awardBatch.GetName() , awardTime, username); err != nil {
-		fmt.Printf("save records error, %v", err)
-	}
+
+	go func() {
+		if err := SaveRecords(awardBatch.GetName() , awardTime, username); err != nil {
+			fmt.Printf("save records error, %v", err)
+		}
+	}()
 
 	return awardBatch
 

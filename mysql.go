@@ -20,7 +20,7 @@ func GetMysqlConn() (*sql.DB, error){
 	return db, nil
 }
 
-// SaveRecords keeps winning records
+// SaveRecords saves winning records
 func SaveRecords(awardName string, awardTime string, userName string) error {
 	db, err := GetMysqlConn()
 	if err != nil {
