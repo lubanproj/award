@@ -2,8 +2,9 @@ package redis
 
 import (
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"log"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // GetConn returns a redis connection

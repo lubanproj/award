@@ -17,7 +17,7 @@ func GetAllAwardBatch() []AwardBatch{
 
 	var awardBatches []AwardBatch
 
-	// 获取所有奖品数
+	// get redis conn
 	conn := redisWrapper.GetConn()
 
 	if conn == nil {
