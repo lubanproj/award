@@ -6,31 +6,33 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+// Global config
 var Conf = struct {
+	// Award info
 	Award struct {
-		StartTime string `toml:"startTime"`
-		EndTime string `toml:"endTime"`
+		StartTime string `toml:"startTime"`  // start time of prizes
+		EndTime string `toml:"endTime"`      // end time of prize delivery
+
 	}
 
+	// AwardMap store all prize categories and the initial number
 	AwardMap map[string]int64
 
+	// Global redis config
 	Redis struct {
-		Ip string `toml:"ip""`
-		Port uint32 `toml:"port"`
-		Network string `toml:"network"`
+		Ip string `toml:"ip""`  // redis-server ip
+		Port uint32 `toml:"port"`   // redis-server port
+		Network string `toml:"network"`  // network
 	}
 
+	// Global mysql config
 	Mysql struct {
-		Database string `toml:"database"`
-		Username string `toml:"username"`
-		Password string `toml:"password"`
+		Dsn string `toml:"Dsn"`  // mysql dsn
 	}
 }{}
 
-/**
-* 解析配置文件
- */
-func parse() {
+// parse conf
+func parseConf() {
 	if _, err := toml.DecodeFile("./conf/config.toml", &Conf); err != nil {
 		fmt.Println("parse config error , ", err)
 	}

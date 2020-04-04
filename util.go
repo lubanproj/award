@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// ParseStringToTime implements the conversion of string type and time type
 func ParseStringToTime(tm string) (int64, error)  {
 
 	loc , _ := time.LoadLocation("Local")

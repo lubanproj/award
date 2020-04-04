@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func draw(rsp http.ResponseWriter, req *http.Request) {
+func handleDrawRequests(rsp http.ResponseWriter, req *http.Request) {
 	params := req.URL.Query()
 	var username string
 	usernames, ok := params["username"]
@@ -16,7 +16,7 @@ func draw(rsp http.ResponseWriter, req *http.Request) {
 		log.Println("username is nil")
 		return
 	}
-	awardBatch := WinPrize(username)
+	awardBatch := GetAward(username)
 	if awardBatch == nil {
 		rsp.Write([]byte("sorry you didn't win any prize"))
 	} else {
@@ -25,9 +25,3 @@ func draw(rsp http.ResponseWriter, req *http.Request) {
 	}
 }
 
-
-
-func Start() {
-	http.HandleFunc("/draw", draw)
-	http.ListenAndServe(":8080", nil)
-}

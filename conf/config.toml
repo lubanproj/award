@@ -1,6 +1,6 @@
 [award]
-startTime="2019-06-18 00:00:00"
-endTime="2019-06-18 23:59:59"
+startTime="2020-04-04 18:00:00"
+endTime="2020-04-04 19:00:00"
 
 
 [awardMap]
@@ -9,9 +9,7 @@ B=200
 C=500
 
 [mysql]
-database="award"
-username="diuge"
-password="123456"
+dsn="root:diuge123456@/award"
 
 [redis]
 network="tcp"

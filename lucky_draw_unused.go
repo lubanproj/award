@@ -38,7 +38,7 @@ func GetAllAward(awardBatches []AwardBatch) (AwardBatch, error) {
 	currentTime := time.Now().Unix()
 
 	random := rand.New(rand.NewSource(updateTime))
-	// 计算下一个奖品的释放时间
+
 	releaseTime := startTime + (totalAmount - totalBalance) * detaTime +  int64(random.Int()) % detaTime
 
 	fmt.Println("releaseTime : " + fmt.Sprintf("%d", releaseTime) + " currentTime : " + fmt.Sprintf("%d",currentTime))

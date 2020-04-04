@@ -1,16 +1,15 @@
-package mysql
+package main
 
 import (
 	"database/sql"
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetConn() *sql.DB{
-	dsn := fmt.Sprintf("%s:%s@/%s", "root", "diuge123456", "award")
-
-	db, err := sql.Open("mysql",dsn)
+// GetMysqlConn gets a mysql connection
+func GetMysqlConn() *sql.DB{
+	db, err := sql.Open("mysql", Conf.Mysql.Dsn)
 
 	if err != nil {
 		log.Println("get mysql conn error, ", err)
@@ -20,8 +19,9 @@ func GetConn() *sql.DB{
 	return db
 }
 
+// SaveRecords keeps winning records
 func SaveRecords(awardName string, awardTime string, userName string) {
-	db := GetConn()
+	db := GetMysqlConn()
 
 	defer db.Close()
 
@@ -46,9 +46,10 @@ func SaveRecords(awardName string, awardTime string, userName string) {
 
 }
 
+// QueryRecords querys winning records
 func QueryRecords() {
 
-	db := GetConn()
+	db := GetMysqlConn()
 	defer db.Close()
 
 	if db == nil {

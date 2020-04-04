@@ -7,9 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
-
-	redisWrapper "github.com/lubanproj/award/redis"
+	"github.com/gomodule/redigo/redis"
 )
 
 // GetAllAwardBatch get all the AwardBatchs
@@ -18,7 +16,7 @@ func GetAllAwardBatch() []AwardBatch{
 	var awardBatches []AwardBatch
 
 	// get redis conn
-	conn := redisWrapper.GetConn()
+	conn := GetConn()
 
 	if conn == nil {
 		log.Println("conn is nil")
@@ -75,7 +73,8 @@ func GetAllAwardBatch() []AwardBatch{
 	return awardBatches
 }
 
-func WinPrize(username string) *AwardBatch {
+// Determine if the user has won prize
+func GetAward(username string) *AwardBatch {
 
 	awardBatch := GetAwardBatch()
 
@@ -83,8 +82,8 @@ func WinPrize(username string) *AwardBatch {
 		return awardBatch
 	}
 
-	// 更新 lastUpdateTime 和 balance， 如果更新不成功，视为抽奖失败
-	conn := redisWrapper.GetConn()
+	// update lastUpdateTime and balance
+	conn := GetConn()
 
 	if conn == nil {
 		log.Println("conn is nil")
@@ -95,8 +94,8 @@ func WinPrize(username string) *AwardBatch {
 
 	conn.Send("WATCH", getAwardBalanceKey())
 	conn.Send("MULTI")
-	conn.Send("ZADD",getAwardInfoKey(),time.Now().Unix(), awardBatch.GetName())
-	conn.Send("HSET",getAwardBalanceKey(), awardBatch.GetName(), awardBatch.totalBalance - 1)
+	conn.Send("ZADD", getAwardInfoKey(),time.Now().Unix(), awardBatch.GetName())
+	conn.Send("HSET", getAwardBalanceKey(), awardBatch.GetName(), awardBatch.totalBalance - 1)
 	conn.Send("EXEC")
 
 	err := conn.Flush()
@@ -107,16 +106,15 @@ func WinPrize(username string) *AwardBatch {
 
 	log.Println("congratulations , you won ", awardBatch.GetName() )
 
-	// 保存用户中奖纪录
 	awardTime := time.Unix(awardBatch.GetUpdateTime(), 0).Format("2006-01-02 15:04:05")
 //	userName := req.Form.Get("user_name")
-	mysqlWrapper.SaveRecords(awardBatch.GetName() , awardTime, username)
+	SaveRecords(awardBatch.GetName() , awardTime, username)
 
 	return awardBatch
 
 }
 
-
+// GetAwardBatch implemented a specific lucky draw algorithm
 func GetAwardBatch() *AwardBatch {
 
 	awardBatch := RandomGetAwardBatch()
@@ -126,7 +124,7 @@ func GetAwardBatch() *AwardBatch {
 		return nil
 	}
 
-	// 判断是否到达奖品释放时间点
+	// Determine if the prize release time point has been reached
 	startTime , _ := ParseStringToTime(Conf.Award.StartTime)
 	endTime , _ := ParseStringToTime(Conf.Award.EndTime)
 	totalAmount := awardBatch.totalAmount
@@ -136,13 +134,13 @@ func GetAwardBatch() *AwardBatch {
 
 	detaTime := (endTime - startTime) / awardBatch.totalAmount
 
-	// 计算下一个奖品释放的时间点
+	// calculate when the next award will be released
 	releaseTime := startTime + (totalAmount - totalBalance) * detaTime + int64(random.Int()) % detaTime
 
 	log.Println("relaseTime : ", time.Unix(releaseTime, 0).Format("2006-01-02 15:04:05"))
 
 	if time.Now().Unix() < releaseTime {
-		// 未到达奖品释放的时间点，即不中奖
+		// If you do not reach the point of release, you will not win
 		log.Println("sorry, you didn't win the prize")
 		return nil
 	}
@@ -150,9 +148,10 @@ func GetAwardBatch() *AwardBatch {
 	return awardBatch
 }
 
+// RandomGetAwardBatch choose a random award from the award pool
 func RandomGetAwardBatch() *AwardBatch {
 
-	conn := redisWrapper.GetConn()
+	conn := GetConn()
 
 	if conn == nil {
 		log.Println("conn is nil")
@@ -196,7 +195,7 @@ func RandomGetAwardBatch() *AwardBatch {
 
 	for _ , awardBatch := range awardBatches {
 
-		// 奖品已经抽完
+		// The awards have been drawn
 		if awardBatch.GetTotalBalance() <= 0 {
 			log.Println("奖品已经抽完")
 			continue
@@ -212,9 +211,10 @@ func RandomGetAwardBatch() *AwardBatch {
 }
 
 
+// InitAwardPool initializes the award pool
 func InitAwardPool() {
 
-	conn := redisWrapper.GetConn()
+	conn := GetConn()
 
 	if conn == nil {
 		log.Println("conn is nil")
