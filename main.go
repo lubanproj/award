@@ -3,14 +3,13 @@ package main
 import "net/http"
 
 func init() {
+	// parseConf must before InitAwardPool
+	parseConf()
 	InitLogConf()
 	InitAwardPool()
 }
 
 func main() {
-
-	parseConf()
-
 	Start()
 }
 

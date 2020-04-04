@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -12,7 +11,7 @@ func GetConn() redis.Conn{
 	conn , err := redis.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", 6379))
 
 	if err != nil {
-		log.Println("connect to redis error ", err)
+		fmt.Println("connect to redis error ", err)
 		return nil
 	}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -13,7 +12,8 @@ func handleDrawRequests(rsp http.ResponseWriter, req *http.Request) {
 	if ok {
 		username = usernames[0]
 	} else {
-		log.Println("username is nil")
+		fmt.Println("username is empty")
+		rsp.Write([]byte("username cannot be empty"))
 		return
 	}
 	awardBatch := GetAward(username)

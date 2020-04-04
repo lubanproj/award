@@ -15,7 +15,8 @@ func InitLogConf() {
 	f , err := os.OpenFile(fileName, os.O_CREATE|os.O_RDWR|os.O_APPEND, 0666)
 
 	if err != nil {
-		log.Fatalf("file open error, %v", err)
+		fmt.Errorf("file open error, %v", err)
+		return
 	}
 
 	// display line numbers
