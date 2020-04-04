@@ -7,8 +7,15 @@ A small but complete lottery system
 
 #### 1、安装 redis
 
+redis 的安装可以参考：https://www.runoob.com/redis/redis-install.html
+
+安装完成后，启动 redis，默认会在 127.0.0.1:6379 端口监听
 
 #### 2、安装并部署 mysql
+
+mysql 的安装可以参考：https://www.runoob.com/mysql/mysql-install.html
+
+安装完成后，需要创建相应库表
 
 #### 3、更改 conf/config.toml
 
