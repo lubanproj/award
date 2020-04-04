@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -15,10 +16,10 @@ func GetAllAwardBatch() []AwardBatch{
 	var awardBatches []AwardBatch
 
 	// get redis conn
-	conn := GetConn()
+	conn, err := GetConn()
 
-	if conn == nil {
-		fmt.Println("conn is nil")
+	if err != nil {
+		fmt.Printf("get conn error, %v \n", err)
 		return awardBatches
 	}
 
@@ -64,7 +65,7 @@ func GetAllAwardBatch() []AwardBatch{
 		}
 	}
 
-	// 填充 totalAmount
+	// fill totalAmount
 	for index, awardBatch := range awardBatches {
 		awardBatches[index].SetTotalAmount(Conf.AwardMap[awardBatch.GetName()])
 	}
@@ -82,10 +83,10 @@ func GetAward(username string) *AwardBatch {
 	}
 
 	// update lastUpdateTime and balance
-	conn := GetConn()
+	conn, err := GetConn()
 
-	if conn == nil {
-		fmt.Println("conn is nil")
+	if err != nil {
+		fmt.Printf("get conn is nil , %v \n", err)
 		return nil
 	}
 
@@ -97,7 +98,7 @@ func GetAward(username string) *AwardBatch {
 	conn.Send("HSET", getAwardBalanceKey(), awardBatch.GetName(), awardBatch.totalBalance - 1)
 	conn.Send("EXEC")
 
-	err := conn.Flush()
+	err = conn.Flush()
 	if err != nil {
 		fmt.Println("redis error, " , err)
 		return nil
@@ -107,7 +108,9 @@ func GetAward(username string) *AwardBatch {
 
 	awardTime := time.Unix(awardBatch.GetUpdateTime(), 0).Format("2006-01-02 15:04:05")
 //	userName := req.Form.Get("user_name")
-	SaveRecords(awardBatch.GetName() , awardTime, username)
+	if err := SaveRecords(awardBatch.GetName() , awardTime, username); err != nil {
+		fmt.Printf("save records error, %v", err)
+	}
 
 	return awardBatch
 
@@ -116,9 +119,9 @@ func GetAward(username string) *AwardBatch {
 // GetAwardBatch implemented a specific lucky draw algorithm
 func GetAwardBatch() *AwardBatch {
 
-	awardBatch := RandomGetAwardBatch()
+	awardBatch, err := RandomGetAwardBatch()
 
-	if awardBatch == nil {
+	if awardBatch == nil || err != nil {
 		fmt.Println("sorry, you didn't win the prize.")
 		return nil
 	}
@@ -148,13 +151,12 @@ func GetAwardBatch() *AwardBatch {
 }
 
 // RandomGetAwardBatch choose a random award from the award pool
-func RandomGetAwardBatch() *AwardBatch {
+func RandomGetAwardBatch() (*AwardBatch, error) {
 
-	conn := GetConn()
-
-	if conn == nil {
-		fmt.Println("conn is nil")
-		return nil
+	conn, err := GetConn()
+	if err != nil {
+		fmt.Printf("get conn is nil , %v \n", err)
+		return nil, err
 	}
 
 	defer conn.Close()
@@ -163,7 +165,7 @@ func RandomGetAwardBatch() *AwardBatch {
 
 	if err != nil || retMap == nil {
 		fmt.Println("redis HGETALL award error", err)
-		return nil
+		return nil, err
 	}
 
 	totalBalance := int64(0)
@@ -175,7 +177,7 @@ func RandomGetAwardBatch() *AwardBatch {
 
 	if totalBalance == 0 {
 		fmt.Println("total balance is 0")
-		return nil
+		return nil, errors.New("total balance is 0")
 	}
 
 	fmt.Println("totalBalance :", totalBalance)
@@ -202,22 +204,21 @@ func RandomGetAwardBatch() *AwardBatch {
 
 		num = num - awardBatch.GetTotalBalance()
 		if num < 0 {
-			return &awardBatch
+			return &awardBatch, nil
 		}
 	}
 
-	return nil
+	return nil, nil
 }
 
 
 // InitAwardPool initializes the award pool
-func InitAwardPool() {
+func InitAwardPool() error {
 
-	conn := GetConn()
-
-	if conn == nil {
-		fmt.Println("conn is nil")
-		return
+	conn, err := GetConn()
+	if err != nil {
+		fmt.Printf("get conn is nil , %v \n", err)
+		return err
 	}
 
 	defer conn.Close()
@@ -239,7 +240,7 @@ func InitAwardPool() {
 		}
 	}
 
-
+	return nil
 }
 
 

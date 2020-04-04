@@ -7,14 +7,14 @@ import (
 )
 
 // GetConn returns a redis connection
-func GetConn() redis.Conn{
+func GetConn() (redis.Conn, error) {
 	conn , err := redis.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", 6379))
 
 	if err != nil {
 		fmt.Println("connect to redis error ", err)
-		return nil
+		return nil, err
 	}
 
-	return conn
+	return conn, nil
 }
 

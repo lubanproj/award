@@ -6,7 +6,7 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// Global config
+// Conf defines Global config
 var Conf = struct {
 	// Award info
 	Award struct {
@@ -32,9 +32,11 @@ var Conf = struct {
 }{}
 
 // parse conf
-func parseConf() {
+func parseConf() error {
 	if _, err := toml.DecodeFile("./conf/config.toml", &Conf); err != nil {
 		fmt.Println("parse config error , ", err)
+		return err
 	}
  	fmt.Println("awardMap : ", Conf.AwardMap)
+	return nil
 }

@@ -2,38 +2,38 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 // GetMysqlConn gets a mysql connection
-func GetMysqlConn() *sql.DB{
+func GetMysqlConn() (*sql.DB, error){
 	db, err := sql.Open("mysql", Conf.Mysql.Dsn)
 
 	if err != nil {
 		fmt.Println("get mysql conn error, ", err)
-		return nil
+		return db, err
 	}
 
-	return db
+	return db, nil
 }
 
 // SaveRecords keeps winning records
-func SaveRecords(awardName string, awardTime string, userName string) {
-	db := GetMysqlConn()
+func SaveRecords(awardName string, awardTime string, userName string) error {
+	db, err := GetMysqlConn()
+	if err != nil {
+		fmt.Println("conn is nil")
+		return err
+	}
 
 	defer db.Close()
-
-	if db == nil {
-		fmt.Println("conn is nil")
-		return
-	}
 
 	stmt, err := db.Prepare("insert into award_user_info(award_name,award_time,user_name) values(?,?,?);")
 	if err != nil {
 		fmt.Println("prepare insert sql error, ", err)
-		return
+		return errors.New("prepare insert sql error")
 	}
 
 	fmt.Println("insert into award_user_info , award_name , award_time  , user_name ",awardName, awardTime, userName)
@@ -41,26 +41,27 @@ func SaveRecords(awardName string, awardTime string, userName string) {
 	_ , err = stmt.Exec(awardName, awardTime, userName)
 	if err != nil {
 		fmt.Println("exec sql error, ", err)
-		return
+		return errors.New("exec sql error")
 	}
 
+	return nil
 }
 
 // QueryRecords querys winning records
-func QueryRecords() {
+func QueryRecords() error {
 
-	db := GetMysqlConn()
-	defer db.Close()
-
-	if db == nil {
+	db, err := GetMysqlConn()
+	if err != nil {
 		fmt.Println("conn is nil")
-		return
+		return err
 	}
+
+	defer db.Close()
 
 	rows, err := db.Query("select * from award_user_info")
 	if err != nil {
 		fmt.Println("exec select error", err)
-		return
+		return err
 	}
 
 	for rows.Next() {
@@ -73,5 +74,6 @@ func QueryRecords() {
 		fmt.Printf("id : %d, awardName : %s, userName : %s, awardTime : %s \n",id, awardName, userName, awardTime)
 	}
 
+	return err
 }
 
