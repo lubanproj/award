@@ -8,7 +8,7 @@ import (
 
 // GetConn returns a redis connection
 func GetConn() (redis.Conn, error) {
-	conn , err := redis.Dial("tcp", fmt.Sprintf("%s:%d", "127.0.0.1", 6379))
+	conn , err := redis.Dial(Conf.Redis.Network, fmt.Sprintf("%s:%d", Conf.Redis.Ip, Conf.Redis.Port))
 
 	if err != nil {
 		fmt.Println("connect to redis error ", err)
